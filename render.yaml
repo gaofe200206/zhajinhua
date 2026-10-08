@@ -1,0 +1,16 @@
+# Render 免费部署配置（可选）
+# 用法：在 Render Dashboard（https://render.com 用 GitHub 登录，免费）→
+#       New + → Web Service → 连接你的 GitHub 仓库（把 online 目录作为仓库根）→
+#       选择本 render.yaml 自动配置 → 选 Free 实例 → Deploy
+# 部署完成后访问 https://zhajinhua.onrender.com（名称可改，域名随之变）
+# 微信小程序 socket 合法域名填：wss://你的服务名.onrender.com
+services:
+  - type: web
+    name: zhajinhua
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: "8080"
+    healthCheckPath: /

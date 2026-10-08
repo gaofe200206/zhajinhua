@@ -1,0 +1,41 @@
+# 扎金花 nginx 配置示例（https + wss 反代到 8080）
+# 用法：把 yourdomain.com 换成你的域名，证书路径换成你自己的。
+# 文件放到 /etc/nginx/conf.d/zhajinhua.conf 后：nginx -t && nginx -s reload
+
+server {
+    listen 80;
+    server_name yourdomain.com;
+    # HTTP 全部跳 HTTPS
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name yourdomain.com;
+
+    # SSL 证书（腾讯云/阿里云可申请免费证书）
+    ssl_certificate     /etc/nginx/ssl/yourdomain.com.pem;
+    ssl_certificate_key /etc/nginx/ssl/yourdomain.com.key;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+
+    # 网页客户端（online.html 及静态资源由 node 提供，也可改用本机目录）
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_read_timeout 300s;
+    }
+
+    # WebSocket 联机（微信小程序要求 wss://）
+    location /ws {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_read_timeout 300s;
+    }
+}
